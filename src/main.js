@@ -28,7 +28,7 @@
     var demo = now - lastLiveAt > WH.config.idleToDemoMs;
     var hands = demo ? WH.demo.hands(now) : live;
 
-    WH.sky.draw(ctx, now, dt, !mode.fullField); // text-heavy modes skip the background words
+    if (!mode.ownBackground) WH.sky.draw(ctx, now, dt, !mode.fullField); // text-heavy modes skip the background words
     WH.util.update(hands, dt);
     mode.update(hands, dt);
     mode.draw(ctx, hands, now);

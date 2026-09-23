@@ -1,14 +1,19 @@
-// Config menu: press C (or click the gear in the top-right corner, shown when the mouse moves).
+// Config menu: opens on start (skip with ?kiosk=1). Press C, Esc or Space (or click the gear in the
+// top-right corner, shown when the mouse moves) to open it again.
 // Settings are stored in this browser's localStorage and applied on the next load.
 (function () {
   var KEY = 'wordhands.config.v1';
-  var EDITABLE = ['mode', 'wordSets', 'rowHeightVh', 'bgWordCount', 'scrollSpeed', 'gradient'];
+  var EDITABLE = ['mode', 'wave', 'wordSets', 'rowHeightVh', 'bgWordCount', 'scrollSpeed', 'gradient'];
   var defaults = JSON.parse(JSON.stringify(WH.config));
 
   function load() {
     try {
       var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (saved) EDITABLE.forEach(function (k) { if (saved[k] != null) WH.config[k] = saved[k]; });
+      if (saved) EDITABLE.forEach(function (k) {
+        if (saved[k] == null) return;
+        // Objects merge over defaults so settings saved by older versions stay valid.
+        WH.config[k] = k === 'wave' ? Object.assign({}, WH.config.wave, saved.wave) : saved[k];
+      });
     } catch (e) {}
   }
   function persist() {
@@ -31,7 +36,7 @@
     '#whm.on{display:flex}' +
     '#whm .p{width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;box-sizing:border-box;padding:20px;' +
     'background:#0b1f3f;color:#dbeaff;border:1px solid #2e5a9a;border-radius:10px;font:14px/1.4 system-ui,Segoe UI,sans-serif}' +
-    '#whm h2{margin:0 0 10px;font-size:18px}#whm .p>label{margin-bottom:10px}#whm small{color:#8fb0da}' +
+    '#whm h3{margin:14px 0 2px;font-size:15px;color:#9fc4ff}#whm h2{margin:0 0 10px;font-size:18px}#whm .p>label{margin-bottom:10px}#whm small{color:#8fb0da}' +
     '#whm textarea{width:100%;height:42vh;box-sizing:border-box;margin:10px 0;background:#061530;color:#e8f3ff;border:1px solid #2e5a9a;border-radius:6px;padding:8px;font:13px/1.35 Consolas,monospace}' +
     '#whm .g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 16px;margin:8px 0}' +
     '#whm select{background:#061530;color:#e8f3ff;border:1px solid #2e5a9a;border-radius:6px;padding:6px;font:inherit}' +
@@ -56,6 +61,14 @@
     '<label>Background words <input id="whb" type="range" min="0" max="400" step="10"></label>' +
     '<label>Scroll speed <input id="whs" type="range" min="20" max="300" step="5"></label>' +
     '<label>Text gradient <span id="whc"></span></label>' +
+    '</div><h3>Wave mode</h3><div class="g">' +
+    '<label>Wave height <input id="wva" type="range" min="0" max="3" step="0.05"></label>' +
+    '<label>Wave length <input id="wvl" type="range" min="0.3" max="3" step="0.05"></label>' +
+    '<label>Wave speed <input id="wvs" type="range" min="0" max="3" step="0.05"></label>' +
+    '<label>Choppiness <input id="wvc" type="range" min="0" max="1" step="0.05"></label>' +
+    '<label>Dot density <input id="wvd" type="range" min="0.4" max="2" step="0.1"></label>' +
+    '<label>Banners <input id="wvb" type="range" min="1" max="9" step="1"></label>' +
+    '<label>Dot colors <span><input id="wvc0" type="color"> <input id="wvc1" type="color"></span></label>' +
     '</div><div class="row">' +
     '<button id="whsave">Save &amp; apply</button><button class="s" id="whreset">Restore defaults</button>' +
     '<button class="s" id="whclose">Close</button></div></div>';
@@ -67,6 +80,10 @@
       return '<option value="' + md.key + '"' + (md.key === cfg.mode ? ' selected' : '') + '>' + md.label + '</option>';
     }).join('');
     $('whw').value = setsToText(cfg.wordSets);
+    var wv = cfg.wave;
+    $('wva').value = wv.amplitude; $('wvl').value = wv.wavelength; $('wvs').value = wv.speed;
+    $('wvc').value = wv.choppiness; $('wvd').value = wv.density; $('wvb').value = wv.banners;
+    $('wvc0').value = wv.colors[0]; $('wvc1').value = wv.colors[1];
     // Slider is inverted so right = denser (smaller rows).
     $('whd').value = 0.074 - cfg.rowHeightVh;
     $('whb').value = cfg.bgWordCount; $('whs').value = cfg.scrollSpeed;
@@ -85,6 +102,9 @@
     if (!sets.length) { alert('Add at least one word.'); return; }
     apply({
       mode: $('whmode').value,
+      wave: { amplitude: +$('wva').value, wavelength: +$('wvl').value, speed: +$('wvs').value,
+              choppiness: +$('wvc').value, density: +$('wvd').value, banners: +$('wvb').value,
+              colors: [$('wvc0').value, $('wvc1').value] },
       wordSets: sets,
       rowHeightVh: +(0.074 - $('whd').value).toFixed(3),
       bgWordCount: +$('whb').value, scrollSpeed: +$('whs').value,
@@ -102,7 +122,7 @@
 
   addEventListener('keydown', function (e) {
     if (m.classList.contains('on')) { if (e.key === 'Escape') close(); return; }
-    if (e.key === 'c' || e.key === 'C') open();
+    if (e.key === 'c' || e.key === 'C' || e.key === 'Escape' || e.key === ' ') { e.preventDefault(); open(); }
   });
   var hideT;
   addEventListener('mousemove', function () {
@@ -111,4 +131,6 @@
   });
 
   WH.menu = { open: open, close: close };
+  // Open on start once all modes are registered, unless running unattended.
+  if (new URLSearchParams(location.search).get('kiosk') !== '1') addEventListener('load', open);
 })();

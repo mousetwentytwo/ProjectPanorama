@@ -1,9 +1,12 @@
 // Tunables for the installation. Edit freely on site.
 window.WH = window.WH || {};
 WH.config = {
-  // Display mode: hands | rain | burst | constellation | ripple | puppet (set in the menu, or ?mode=...)
+  // Display mode: hands | rain | burst | constellation | ripple | puppet | wave (set in the menu, or ?mode=...)
   mode: 'hands',
-  rainCount: 170,          // particles in the rain / swarm mode
+  rainCount: 170,
+  // Wave mode (fluid dot plane + banners); all multipliers, 1 = default.
+  wave: { amplitude: 1, wavelength: 1, speed: 1, choppiness: 0.5, density: 1, banners: 5,
+          colors: ['#8a5cff', '#34e7ff'] },          // particles in the rain / swarm mode
   leapUrl: 'ws://127.0.0.1:6437/v6.json',
   // Default word sets (AI summit / IT / software company vocabulary). A grab (fist) cycles sets.
   // Can be overridden at runtime via the config menu (press C), stored in this browser.

@@ -44,3 +44,5 @@ Then commit and push to `claude/exciting-mccarthy-206iss`.
 - [x] Denser text, gradient text, settings menu (C key) for word sets/density/speed/colors, AI-summit vocabulary (5 sets, ~170 terms)
 - [x] Display modes: hands, rain, burst, constellation, ripple, puppet (menu select, `?mode=` override); fill.js refactored into util.js + modes/hands.js
 - [ ] On-site: check each mode with a real LM-010 (especially the puppet arm mapping and the rain push/pull radius)
+- [x] Wave mode: fluid purple/cyan dot plane + scrolling banners, tunable in menu (height, length, speed, choppiness, density, banners, colors)
+- [x] Settings screen opens at startup (`?kiosk=1` skips it); Esc / Space / C open it

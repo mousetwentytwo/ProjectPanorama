@@ -28,9 +28,10 @@ filled with scrolling IT-sector words.
 3. Plug in the LM-010 with the green LED facing the visitor, lens facing up.
 4. Launch:
    ```
-   "C:\Program Files\Google\Chrome\Application\chrome.exe" --kiosk --app="file:///C:/WordHands/index.html"
+   "C:\Program Files\Google\Chrome\Application\chrome.exe" --kiosk --app="file:///C:/WordHands/index.html?kiosk=1"
    ```
-   For autostart, put that shortcut in `shell:startup`. Disable Windows sleep and screen saver.
+   `?kiosk=1` skips the settings screen at startup, so an unattended reboot goes straight to the display. Leave it
+   off if an operator starts the show. For autostart, put that shortcut in `shell:startup`. Disable Windows sleep and screen saver.
 
 No build step and no internet access needed. The page is plain HTML with classic scripts, so it works from `file://`.
 
@@ -46,12 +47,18 @@ Every mode uses the same hand tracking, word sets, gradient and demo hands. A fi
 | `burst` | Word cloud burst | A centre word cloud. An open hand blasts it apart, a closed hand re-forms it with a new headline |
 | `constellation` | Constellation | Fingertips and palms become glowing nodes in a neural mesh with word labels. Fast moves shed word sparks |
 | `ripple` | Ripple / wave field | A full-screen word field. Hands send rings that swell, brighten and swap words |
+| `wave` | Wave | A purple/cyan dot plane moving like a fluid surface, with word banners scrolling left and right and bobbing on the waves. Hands drop ripples; a fist makes a big splash |
 | `puppet` | Word puppet | A full-body figure filled with words. Its arms follow the tracked hands, and with no hands it idles and waves. The LM-010 cannot see bodies, so it is hand-driven |
 
 ## Settings menu
 
-Press **C** (or move the mouse and click the gear, top right) to open the menu:
+The settings menu **opens automatically when the page starts**, so the operator can check the mode and words and then
+press Save & apply or Close to start. After that, **Esc**, **Space** or **C** (or the gear icon, top right, shown
+when the mouse moves) opens it again. Esc also closes it.
+
 - **Display mode** (see above).
+- **Wave mode:** wave height, wave length, wave speed, choppiness, dot density, number of banners and the two dot colors.
+  Banner speed follows the Scroll speed setting.
 - **Word list:** one word or phrase per line (commas also work). A blank line starts a new word set.
 - **Hand text density**, **background word count** and **scroll speed** sliders.
 - **Text gradient** colors (4 stops).
@@ -67,6 +74,7 @@ so set them up on the kiosk PC itself.
 | `?demo=1`  | Force demo hands (no sensor)                   |
 | `?debug=1` | FPS in the status line + yellow bone skeleton  |
 | `?mode=rain` | Use this display mode for this page load       |
+| `?kiosk=1` | Do not open the settings screen at startup      |
 
 ## Tuning
 
