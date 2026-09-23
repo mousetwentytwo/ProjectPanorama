@@ -34,9 +34,24 @@ filled with scrolling IT-sector words.
 
 No build step and no internet access needed. The page is plain HTML with classic scripts, so it works from `file://`.
 
+## Display modes
+
+Pick one in the settings menu ("Display mode"). For a quick test, add `?mode=<key>` to the URL (this page load only).
+Every mode uses the same hand tracking, word sets, gradient and demo hands. A fist switches the word set in every mode.
+
+| Key | Mode | What visitors see |
+|-----|------|-------------------|
+| `hands` | Hands | Hand silhouettes filled with scrolling word rows (default) |
+| `rain` | Word rain / swarm | Falling words. An open hand pushes them away, a fist pulls them in like a magnet |
+| `burst` | Word cloud burst | A centre word cloud. An open hand blasts it apart, a closed hand re-forms it with a new headline |
+| `constellation` | Constellation | Fingertips and palms become glowing nodes in a neural mesh with word labels. Fast moves shed word sparks |
+| `ripple` | Ripple / wave field | A full-screen word field. Hands send rings that swell, brighten and swap words |
+| `puppet` | Word puppet | A full-body figure filled with words. Its arms follow the tracked hands, and with no hands it idles and waves. The LM-010 cannot see bodies, so it is hand-driven |
+
 ## Settings menu
 
 Press **C** (or move the mouse and click the gear, top right) to open the menu:
+- **Display mode** (see above).
 - **Word list:** one word or phrase per line (commas also work). A blank line starts a new word set.
 - **Hand text density**, **background word count** and **scroll speed** sliders.
 - **Text gradient** colors (4 stops).
@@ -51,6 +66,7 @@ so set them up on the kiosk PC itself.
 |------------|------------------------------------------------|
 | `?demo=1`  | Force demo hands (no sensor)                   |
 | `?debug=1` | FPS in the status line + yellow bone skeleton  |
+| `?mode=rain` | Use this display mode for this page load       |
 
 ## Tuning
 
@@ -65,7 +81,8 @@ If hands clip at the screen edges, widen `box.xMin/xMax`. If they look too small
 | `src/leap.js`     | Dependency-free v6 WebSocket client, auto-reconnect    |
 | `src/sky.js`      | Gradient, clouds, parallax background words            |
 | `src/hands.js`    | Leap mm -> screen projection, silhouette painting      |
-| `src/fill.js`     | Scrolling word rows clipped to silhouettes, glow       |
+| `src/util.js`     | Shared: word sets, fist -> next set, gradients, word-filled silhouette layer, mode registry |
+| `src/modes/*.js`  | One file per display mode (`resize`, `update`, `draw`) |
 | `src/demo.js`     | Synthetic hands for attract mode                       |
 | `src/menu.js`     | Settings menu (C key), localStorage persistence         |
 | `src/main.js`     | Render loop, demo switching, status                    |

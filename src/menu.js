@@ -2,7 +2,7 @@
 // Settings are stored in this browser's localStorage and applied on the next load.
 (function () {
   var KEY = 'wordhands.config.v1';
-  var EDITABLE = ['wordSets', 'rowHeightVh', 'bgWordCount', 'scrollSpeed', 'gradient'];
+  var EDITABLE = ['mode', 'wordSets', 'rowHeightVh', 'bgWordCount', 'scrollSpeed', 'gradient'];
   var defaults = JSON.parse(JSON.stringify(WH.config));
 
   function load() {
@@ -31,9 +31,10 @@
     '#whm.on{display:flex}' +
     '#whm .p{width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;box-sizing:border-box;padding:20px;' +
     'background:#0b1f3f;color:#dbeaff;border:1px solid #2e5a9a;border-radius:10px;font:14px/1.4 system-ui,Segoe UI,sans-serif}' +
-    '#whm h2{margin:0 0 4px;font-size:18px}#whm small{color:#8fb0da}' +
+    '#whm h2{margin:0 0 10px;font-size:18px}#whm .p>label{margin-bottom:10px}#whm small{color:#8fb0da}' +
     '#whm textarea{width:100%;height:42vh;box-sizing:border-box;margin:10px 0;background:#061530;color:#e8f3ff;border:1px solid #2e5a9a;border-radius:6px;padding:8px;font:13px/1.35 Consolas,monospace}' +
     '#whm .g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 16px;margin:8px 0}' +
+    '#whm select{background:#061530;color:#e8f3ff;border:1px solid #2e5a9a;border-radius:6px;padding:6px;font:inherit}' +
     '#whm label{display:flex;flex-direction:column;gap:4px}#whm input[type=color]{width:40px;height:28px;border:0;background:none;padding:0}' +
     '#whm .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}' +
     '#whm button{background:#1c5fae;color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}' +
@@ -47,6 +48,7 @@
   m.id = 'whm';
   m.innerHTML =
     '<div class="p"><h2>Word Hands settings</h2>' +
+    '<label>Display mode <select id="whmode"></select></label>' +
     '<small>One word or phrase per line (commas also work). Leave a blank line between word sets. A fist switches sets.</small>' +
     '<textarea id="whw" spellcheck="false"></textarea>' +
     '<div class="g">' +
@@ -61,6 +63,9 @@
   function $(id) { return document.getElementById(id); }
 
   function fill(cfg) {
+    $('whmode').innerHTML = WH.modeList.map(function (md) {
+      return '<option value="' + md.key + '"' + (md.key === cfg.mode ? ' selected' : '') + '>' + md.label + '</option>';
+    }).join('');
     $('whw').value = setsToText(cfg.wordSets);
     // Slider is inverted so right = denser (smaller rows).
     $('whd').value = 0.074 - cfg.rowHeightVh;
@@ -79,6 +84,7 @@
     var sets = textToSets($('whw').value);
     if (!sets.length) { alert('Add at least one word.'); return; }
     apply({
+      mode: $('whmode').value,
       wordSets: sets,
       rowHeightVh: +(0.074 - $('whd').value).toFixed(3),
       bgWordCount: +$('whb').value, scrollSpeed: +$('whs').value,

@@ -42,3 +42,5 @@ Then commit and push to `claude/exciting-mccarthy-206iss`.
 - [ ] On-site: Orion 4.1 + LM-010 latency, two hands, reconnect after unplug
 - [ ] On-site: tune `box` / `handScale` for the podium height
 - [x] Denser text, gradient text, settings menu (C key) for word sets/density/speed/colors, AI-summit vocabulary (5 sets, ~170 terms)
+- [x] Display modes: hands, rain, burst, constellation, ripple, puppet (menu select, `?mode=` override); fill.js refactored into util.js + modes/hands.js
+- [ ] On-site: check each mode with a real LM-010 (especially the puppet arm mapping and the rain push/pull radius)

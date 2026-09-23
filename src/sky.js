@@ -22,7 +22,7 @@
     }
   }
 
-  function draw(ctx, t, dt) {
+  function draw(ctx, t, dt, showWords) {
     var c = WH.config.sky, g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, c.top); g.addColorStop(0.55, c.mid); g.addColorStop(1, c.bottom);
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -34,6 +34,7 @@
       ctx.fillStyle = rg; ctx.fillRect(cl.x - cl.r, cl.y - cl.r, cl.r * 2, cl.r * 2);
     });
 
+    if (showWords === false) return;
     ctx.textBaseline = 'middle';
     ctx.save();
     words.forEach(function (w) {
