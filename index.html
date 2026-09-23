@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Word Hands</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; background: #0a2a5c; overflow: hidden; cursor: none; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #status { position: fixed; left: 16px; bottom: 12px; font: 14px/1.2 system-ui, sans-serif;
+            color: rgba(255,255,255,.45); letter-spacing: .05em; }
+  #hint { position: fixed; left: 0; right: 0; bottom: 6vh; text-align: center;
+          font: 600 3vh system-ui, sans-serif; color: rgba(255,255,255,.8);
+          letter-spacing: .2em; text-transform: uppercase; transition: opacity 1s; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div id="hint">Hold your hands over the sensor</div>
+<div id="status"></div>
+<!-- Classic scripts (not modules) so file:// works in kiosk Chrome -->
+<script src="src/config.js"></script>
+<script src="src/leap.js"></script>
+<script src="src/sky.js"></script>
+<script src="src/hands.js"></script>
+<script src="src/fill.js"></script>
+<script src="src/demo.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>
