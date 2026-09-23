@@ -12,7 +12,8 @@
     for (var i = 0; i < WH.config.bgWordCount; i++) {
       var depth = Math.random(); // 0 far .. 1 near
       words.push({ text: pool[i % pool.length], x: rand(0, W), y: rand(0, H), depth: depth,
-                   size: H * (0.012 + depth * 0.03), speed: 6 + depth * 30, phase: rand(0, 6.28) });
+                   size: H * (0.01 + depth * 0.024), speed: 6 + depth * 30, phase: rand(0, 6.28),
+                   hue: Math.floor(rand(0, 4)) });
     }
     clouds = [];
     for (var j = 0; j < 9; j++) {
@@ -34,13 +35,19 @@
     });
 
     ctx.textBaseline = 'middle';
+    ctx.save();
     words.forEach(function (w) {
       w.x -= w.speed * dt; if (w.x < -w.size * 10) { w.x = W + w.size * 2; w.y = rand(0, H); }
       var tw = 0.5 + 0.5 * Math.sin(t * 0.0008 + w.phase);
-      ctx.font = '600 ' + w.size + 'px system-ui, Segoe UI, sans-serif';
-      ctx.fillStyle = 'rgba(220,240,255,' + (0.05 + w.depth * 0.18 * tw).toFixed(3) + ')';
+      ctx.font = (w.depth > 0.6 ? '800 ' : '500 ') + w.size + 'px system-ui, Segoe UI, sans-serif';
+      if (!w.width || w.font !== ctx.font) { w.font = ctx.font; w.width = ctx.measureText(w.text).width; }
+      var st = WH.config.gradient, g = ctx.createLinearGradient(w.x, w.y, w.x + w.width, w.y);
+      g.addColorStop(0, st[(w.hue) % st.length]); g.addColorStop(1, st[(w.hue + 1) % st.length]);
+      ctx.fillStyle = g;
+      ctx.globalAlpha = 0.06 + w.depth * 0.22 * tw;
       ctx.fillText(w.text, w.x, w.y);
     });
+    ctx.restore();
   }
 
   WH.sky = { resize: resize, draw: draw };

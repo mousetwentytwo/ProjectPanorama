@@ -18,21 +18,33 @@
     alpha += ((hands.length ? 1 : 0) - alpha) * Math.min(1, dt * 4);
   }
 
+  // Gradient spanning the screen, slid sideways over time so colors flow through the hand.
+  function rowGradient(ctx, r, rh) {
+    var stops = WH.config.gradient, shift = (offset * 0.6 + r * rh * 3) % (W * 2);
+    var g = ctx.createLinearGradient(-shift, 0, W * 2 - shift, rh * 6);
+    for (var i = 0; i <= stops.length * 2 - 2; i++) {
+      g.addColorStop(i / (stops.length * 2 - 2), stops[i < stops.length ? i : stops.length * 2 - 2 - i]);
+    }
+    return g;
+  }
+
   function drawRows(ctx, pinch) {
-    var words = WH.config.wordSets[setIdx];
-    var rh = H * WH.config.rowHeightVh, rows = Math.ceil(H / rh) + 1;
+    var words = WH.config.wordSets[setIdx % WH.config.wordSets.length] || ['AI'];
+    var rh = Math.max(8, H * WH.config.rowHeightVh), rows = Math.ceil(H / rh) + 1;
     ctx.textBaseline = 'middle';
-    ctx.font = '800 ' + (rh * 0.8).toFixed(1) + 'px system-ui, Segoe UI, sans-serif';
     for (var r = 0; r < rows; r++) {
       var dir = r % 2 ? 1 : -1, speedMul = 0.6 + ((r * 37) % 10) / 12;
-      var line = '', start = (r * 5) % words.length;
-      for (var i = 0; i < 12; i++) line += words[(start + i) % words.length] + '  ·  ';
+      var heavy = r % 3 === 0; // mix weights for texture
+      ctx.font = (heavy ? '900 ' : '600 ') + (rh * (heavy ? 0.95 : 0.8)).toFixed(1) + 'px system-ui, Segoe UI, sans-serif';
+      var line = '', start = (r * 7) % words.length;
+      for (var i = 0; i < 16; i++) line += words[(start + i) % words.length] + ' \u2022 ';
       var lw = ctx.measureText(line).width;
       var x = ((dir * offset * speedMul) % lw + lw) % lw - lw;
-      var light = 70 + 25 * Math.sin(r * 0.7 + offset * 0.004) + pinch * 10;
-      ctx.fillStyle = 'hsl(' + (195 + r * 3 % 30) + ',100%,' + Math.min(97, light + flash * 20).toFixed(0) + '%)';
+      ctx.fillStyle = rowGradient(ctx, r, rh);
       for (; x < W; x += lw) ctx.fillText(line, x, r * rh + rh / 2);
     }
+    var glow = Math.max(flash * 0.6, pinch * 0.2);
+    if (glow > 0.01) { ctx.fillStyle = 'rgba(255,255,255,' + glow.toFixed(2) + ')'; ctx.fillRect(0, 0, W, H); }
   }
 
   function draw(ctx, hands) {

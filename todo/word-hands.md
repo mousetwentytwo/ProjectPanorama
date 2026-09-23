@@ -41,3 +41,4 @@ Then commit and push to `claude/exciting-mccarthy-206iss`.
 - [ ] On-site: FPS >= 55 on the target PC at the screen resolution
 - [ ] On-site: Orion 4.1 + LM-010 latency, two hands, reconnect after unplug
 - [ ] On-site: tune `box` / `handScale` for the podium height
+- [x] Denser text, gradient text, settings menu (C key) for word sets/density/speed/colors, AI-summit vocabulary (5 sets, ~170 terms)

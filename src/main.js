@@ -12,6 +12,7 @@
     WH.sky.resize(W, H); WH.fill.resize(W, H);
   }
   addEventListener('resize', resize); resize();
+  WH.onConfigChange = resize; // re-seed background words after menu changes
   if (!FORCE_DEMO) WH.leap.start();
 
   function frame(now) {

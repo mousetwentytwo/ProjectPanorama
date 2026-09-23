@@ -13,8 +13,10 @@ filled with scrolling IT-sector words.
   standing in front of the screen.
 - **Top view.** The screen shows the hands as seen from above. Fingers pointing toward the screen point up. A hand held lower
   (closer to the sensor) looks bigger.
-- **Interaction.** Moving faster scrolls the words faster. A fist (grab) switches the word set (dev, security,
-  languages, emerging tech) with a flash. A pinch brightens the words.
+- **Interaction.** Moving faster scrolls the words faster. A fist (grab) switches the word set (AI, software
+  engineering, security, data and emerging tech, languages and tools) with a flash. A pinch brightens the words.
+- **Look.** Dense rows of gradient-colored words scroll through the hands. The gradient flows over time.
+  Background words use the same gradient palette.
 - **Attract mode.** With no hands for 5 s, or no sensor, animated demo hands play with the hint text.
 
 ## Windows setup
@@ -32,6 +34,17 @@ filled with scrolling IT-sector words.
 
 No build step and no internet access needed. The page is plain HTML with classic scripts, so it works from `file://`.
 
+## Settings menu
+
+Press **C** (or move the mouse and click the gear, top right) to open the menu:
+- **Word list:** one word or phrase per line (commas also work). A blank line starts a new word set.
+- **Hand text density**, **background word count** and **scroll speed** sliders.
+- **Text gradient** colors (4 stops).
+
+**Save & apply** stores settings in this browser (localStorage) and they survive restarts. **Restore defaults** reloads
+the built-in AI-summit vocabulary into the form (then save). Esc closes the menu. Settings are per browser profile,
+so set them up on the kiosk PC itself.
+
 ## URL options
 
 | Option     | Effect                                         |
@@ -41,7 +54,7 @@ No build step and no internet access needed. The page is plain HTML with classic
 
 ## Tuning
 
-All settings are in `src/config.js`: word sets, sky colors, the interaction volume (`box`, in mm), silhouette
+Defaults are in `src/config.js` (the menu overrides some of them): word sets, text gradient, sky colors, the interaction volume (`box`, in mm), silhouette
 thickness (`handScale`), word row height, scroll speed, idle timeout and grab threshold.
 If hands clip at the screen edges, widen `box.xMin/xMax`. If they look too small, raise `handScale`.
 
@@ -54,5 +67,6 @@ If hands clip at the screen edges, widen `box.xMin/xMax`. If they look too small
 | `src/hands.js`    | Leap mm -> screen projection, silhouette painting      |
 | `src/fill.js`     | Scrolling word rows clipped to silhouettes, glow       |
 | `src/demo.js`     | Synthetic hands for attract mode                       |
+| `src/menu.js`     | Settings menu (C key), localStorage persistence         |
 | `src/main.js`     | Render loop, demo switching, status                    |
 | `tools/mock-leap.js` | Fake sensor for testing (`npm i ws && node tools/mock-leap.js`) |
