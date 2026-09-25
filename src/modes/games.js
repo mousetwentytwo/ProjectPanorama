@@ -409,15 +409,15 @@
         label(ctx, String(result.score), W / 2, H * 0.27, H * 0.16, 900, U.gradient(ctx, W * 0.3, 0, W * 0.7, 0));
         if (result.best) label(ctx, "NEW BEST TODAY!", W / 2, H * 0.38, H * 0.035, 900, '#ffd24a');
         if (result.tier) {
-          label(ctx, result.tier.name.toUpperCase() + ' • ' + result.tier.prize, W / 2, H * 0.48, H * 0.055, 900, '#fff');
+          label(ctx, result.tier.name.toUpperCase() + ' TIER', W / 2, H * 0.48, H * 0.055, 900, '#fff');
           if (result.code) {
             ctx.fillStyle = 'rgba(255,255,255,0.95)'; rrect(ctx, W / 2 - H * 0.3, H * 0.56, H * 0.6, H * 0.16, 18); ctx.fill();
             label(ctx, result.code, W / 2, H * 0.64, H * 0.1, 900, '#0a1f4a');
-            label(ctx, 'Show this code at the booth to claim your prize', W / 2, H * 0.79, H * 0.032, 700, '#cfe6ff');
+            label(ctx, 'Show this code • ' + cfg().prizeText, W / 2, H * 0.79, H * 0.032, 700, '#cfe6ff');
           } else label(ctx, 'Practice round (no hands detected), no code', W / 2, H * 0.62, H * 0.032, 700, '#cfe6ff');
         } else {
           label(ctx, 'TRY AGAIN!', W / 2, H * 0.5, H * 0.07, 900, '#fff');
-          label(ctx, (cfg().tiers[0] ? cfg().tiers[0].min : 0) + ' points wins a prize', W / 2, H * 0.6, H * 0.035, 700, '#cfe6ff');
+          label(ctx, (cfg().tiers[0] ? cfg().tiers[0].min : 0) + ' points wins a gift', W / 2, H * 0.6, H * 0.035, 700, '#cfe6ff');
         }
         label(ctx, 'Hold an open hand or press Enter to continue', W / 2, H * 0.9, H * 0.028, 600, 'rgba(255,255,255,0.7)');
       }

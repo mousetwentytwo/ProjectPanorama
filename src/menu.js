@@ -73,9 +73,9 @@
     '</div><h3>Games mode</h3><div class="g">' +
     '<label>Round length (s) <input id="gmr" type="number" min="15" max="120"></label>' +
     '<label>Claim code salt <input id="gms" type="text"></label>' +
+    '<label>Prize message <input id="gmp" type="text"></label>' +
     [0, 1, 2].map(function (i) {
-      return '<label>Tier ' + (i + 1) + ' <span><input id="gtn' + i + '" size="7"> from <input id="gtm' + i + '" type="number" style="width:70px"> pts</span>' +
-             '<input id="gtp' + i + '" placeholder="Prize"></label>';
+      return '<label>Tier ' + (i + 1) + ' <span><input id="gtn' + i + '" size="7"> from <input id="gtm' + i + '" type="number" style="width:70px"> pts</span></label>';
     }).join('') +
     '</div><small>Claims log (<span id="gmc">0</span> entries, newest last). Staff can check codes here.</small>' +
     '<textarea id="gml" readonly style="height:14vh"></textarea>' +
@@ -97,7 +97,8 @@
     $('wvc0').value = wv.colors[0]; $('wvc1').value = wv.colors[1];
     var gm = cfg.games;
     $('gmr').value = gm.roundSec; $('gms').value = gm.salt;
-    gm.tiers.forEach(function (tr, i) { $('gtn' + i).value = tr.name; $('gtm' + i).value = tr.min; $('gtp' + i).value = tr.prize; });
+    gm.tiers.forEach(function (tr, i) { $('gtn' + i).value = tr.name; $('gtm' + i).value = tr.min; });
+    $('gmp').value = gm.prizeText;
     if (WH.gamesLog) { $('gml').value = WH.gamesLog.csv(); $('gmc').textContent = WH.gamesLog.count(); }
     // Slider is inverted so right = denser (smaller rows).
     $('whd').value = 0.074 - cfg.rowHeightVh;
@@ -118,8 +119,9 @@
     apply({
       mode: $('whmode').value,
       games: Object.assign({}, WH.config.games, {
+        prizeText: $('gmp').value || 'Ask at the booth for available gifts',
         roundSec: Math.max(15, Math.min(120, +$('gmr').value || 40)), salt: $('gms').value || 'change-me',
-        tiers: [0, 1, 2].map(function (i) { return { name: $('gtn' + i).value, min: +$('gtm' + i).value, prize: $('gtp' + i).value }; })
+        tiers: [0, 1, 2].map(function (i) { return { name: $('gtn' + i).value, min: +$('gtm' + i).value }; })
           .sort(function (a, b) { return a.min - b.min; }),
       }),
       wave: { amplitude: +$('wva').value, wavelength: +$('wvl').value, speed: +$('wvs').value,

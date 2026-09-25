@@ -9,10 +9,12 @@ WH.config = {
   games: {
     roundSec: 40,
     tiers: [
-      { name: 'Bronze', min: 150, prize: 'Sticker pack' },
-      { name: 'Silver', min: 300, prize: 'T-shirt' },
-      { name: 'Gold', min: 500, prize: 'Hoodie' },
+      { name: 'Bronze', min: 150 },
+      { name: 'Silver', min: 300 },
+      { name: 'Gold', min: 500 },
     ],
+    // Shown under the claim code; no specific gifts are promised.
+    prizeText: 'Ask at the booth for available gifts',
     salt: 'change-me',
     sortLabels: ['AI', 'SOFTWARE', 'SECURITY'],
   },

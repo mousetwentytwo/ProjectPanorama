@@ -65,8 +65,9 @@ A selection screen shows 4 games. Choose one by holding your hand over a tile fo
 
 Consecutive good hits build a combo multiplier (up to x5), and any penalty resets it.
 
-**Prizes:** the tiers (default Bronze 150 / Silver 300 / Gold 500 points, prizes Sticker pack / T-shirt / Hoodie) and a
-**claim code salt** are set in the menu. Change the salt per event. A score at or above a tier shows the prize and a
+**Prizes:** no specific gifts are named on screen. The tiers (default Bronze 150 / Silver 300 / Gold 500 points), the
+**prize message** (default "Ask at the booth for available gifts") and a **claim code salt** are set in the menu. Change
+the salt per event. A score at or above a tier shows the tier, the prize message and a
 code like `S-HFFX` (tier letter + 4 characters).
 
 **Staff: checking a code.** Every code is saved on the kiosk PC. Open the settings (Esc / Space / C) and look in the
@@ -83,7 +84,7 @@ press Save & apply or Close to start. After that, **Esc**, **Space** or **C** (o
 when the mouse moves) opens it again. Esc also closes it.
 
 - **Display mode** (see above).
-- **Games mode:** round length, 3 prize tiers (name, points, prize), claim code salt, claims log.
+- **Games mode:** round length, 3 prize tiers (name, points), prize message, claim code salt, claims log.
 - **Wave mode:** wave height, wave length, wave speed, choppiness, dot density, number of banners and the two dot colors.
   Banner speed follows the Scroll speed setting.
 - **Word list:** one word or phrase per line (commas also work). A blank line starts a new word set.
