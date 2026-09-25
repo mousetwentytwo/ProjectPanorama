@@ -48,7 +48,33 @@ Every mode uses the same hand tracking, word sets, gradient and demo hands. A fi
 | `constellation` | Constellation | Fingertips and palms become glowing nodes in a neural mesh with word labels. Fast moves shed word sparks |
 | `ripple` | Ripple / wave field | A full-screen word field. Hands send rings that swell, brighten and swap words |
 | `wave` | Wave | A purple/cyan dot plane moving like a fluid surface, with word banners scrolling left and right and bobbing on the waves. Hands drop ripples; a fist makes a big splash |
+| `games` | Games | Minigames with a score, prize tiers and claim codes (see below) |
 | `puppet` | Word puppet | A full-body figure filled with words. Its arms follow the tracked hands, and with no hands it idles and waves. The LM-010 cannot see bodies, so it is hand-driven |
+
+## Games mode (play & win)
+
+A selection screen shows 4 games. Choose one by holding your hand over a tile for 1.5 s, or with keys **1-4**
+(or arrows + Enter). Each round lasts 40 s (set in the menu), then the result screen shows the score, the prize tier and a claim code.
+
+| Game | How to play | Points |
+|------|-------------|--------|
+| Bug Catcher | Make a fist on a crawling bug to squash it | bug +10, gold "critical bug" +50, green "feature" -20 |
+| Word Sort | Push falling words into the right bucket (AI / Software / Security = word sets 1-3) | right +10, wrong -5 |
+| Packet Defender | Your palm is a shield around the server: block red packets, let green through | red blocked +10, green blocked -5, green delivered +2; 5 red hits end the round |
+| Token Duel | Swipe your hand up (toward the screen) to fire words at the AI; fist-catch its tokens to reload | hit +15, catch +5, draining the AI +200; 5 misses end the round |
+
+Consecutive good hits build a combo multiplier (up to x5), and any penalty resets it.
+
+**Prizes:** the tiers (default Bronze 150 / Silver 300 / Gold 500 points, prizes Sticker pack / T-shirt / Hoodie) and a
+**claim code salt** are set in the menu. Change the salt per event. A score at or above a tier shows the prize and a
+code like `S-HFFX` (tier letter + 4 characters).
+
+**Staff: checking a code.** Every code is saved on the kiosk PC. Open the settings (Esc / Space / C) and look in the
+**Claims log** under "Games mode" (time, game, score, tier, code). "Copy log as CSV" copies it and "Clear log" empties it.
+A code that is not in the log is not valid. Rounds played with no hands detected (keyboard only) show the score but no code.
+
+Backspace returns to the selection screen. With no hands for 20 s the game also goes back there. The game pauses while the
+settings screen is open. The selection tiles show each game's best score of the day.
 
 ## Settings menu
 
@@ -57,6 +83,7 @@ press Save & apply or Close to start. After that, **Esc**, **Space** or **C** (o
 when the mouse moves) opens it again. Esc also closes it.
 
 - **Display mode** (see above).
+- **Games mode:** round length, 3 prize tiers (name, points, prize), claim code salt, claims log.
 - **Wave mode:** wave height, wave length, wave speed, choppiness, dot density, number of banners and the two dot colors.
   Banner speed follows the Scroll speed setting.
 - **Word list:** one word or phrase per line (commas also work). A blank line starts a new word set.
@@ -91,6 +118,7 @@ If hands clip at the screen edges, widen `box.xMin/xMax`. If they look too small
 | `src/hands.js`    | Leap mm -> screen projection, silhouette painting      |
 | `src/util.js`     | Shared: word sets, fist -> next set, gradients, word-filled silhouette layer, mode registry |
 | `src/modes/*.js`  | One file per display mode (`resize`, `update`, `draw`) |
+| `src/games-log.js`| Claims log + today's best scores (localStorage)          |
 | `src/demo.js`     | Synthetic hands for attract mode                       |
 | `src/menu.js`     | Settings menu (C key), localStorage persistence         |
 | `src/main.js`     | Render loop, demo switching, status                    |

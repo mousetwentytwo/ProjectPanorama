@@ -29,12 +29,12 @@
     var hands = demo ? WH.demo.hands(now) : live;
 
     if (!mode.ownBackground) WH.sky.draw(ctx, now, dt, !mode.fullField); // text-heavy modes skip the background words
-    WH.util.update(hands, dt);
-    mode.update(hands, dt);
-    mode.draw(ctx, hands, now);
+    if (!mode.noSetSwitch) WH.util.update(hands, dt);
+    mode.update(hands, dt, demo);
+    mode.draw(ctx, hands, now, demo);
     if (DEBUG) WH.hands.debug(ctx, hands, W, H);
 
-    hint.style.opacity = demo ? 1 : 0;
+    hint.style.opacity = demo && !mode.ownHint ? 1 : 0;
     status.textContent = (WH.leap.connected() ? 'sensor connected' : 'sensor offline') +
       (demo ? ' · demo' : '') + (DEBUG ? ' · ' + fps.toFixed(0) + ' fps' : '');
     window.__fps = fps;

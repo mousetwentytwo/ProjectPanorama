@@ -1,9 +1,21 @@
 // Tunables for the installation. Edit freely on site.
 window.WH = window.WH || {};
 WH.config = {
-  // Display mode: hands | rain | burst | constellation | ripple | puppet | wave (set in the menu, or ?mode=...)
+  // Display mode: hands | rain | burst | constellation | ripple | puppet | wave | games (set in the menu, or ?mode=...)
   mode: 'hands',
   rainCount: 170,
+  // Games mode: round length, prize tiers (lowest first), salt for claim codes, Word Sort bucket labels
+  // (bucket i takes words from word set i).
+  games: {
+    roundSec: 40,
+    tiers: [
+      { name: 'Bronze', min: 150, prize: 'Sticker pack' },
+      { name: 'Silver', min: 300, prize: 'T-shirt' },
+      { name: 'Gold', min: 500, prize: 'Hoodie' },
+    ],
+    salt: 'change-me',
+    sortLabels: ['AI', 'SOFTWARE', 'SECURITY'],
+  },
   // Wave mode (fluid dot plane + banners); all multipliers, 1 = default.
   wave: { amplitude: 1, wavelength: 1, speed: 1, choppiness: 0.5, density: 1, banners: 5,
           colors: ['#8a5cff', '#34e7ff'] },          // particles in the rain / swarm mode

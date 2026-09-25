@@ -3,7 +3,7 @@
 // Settings are stored in this browser's localStorage and applied on the next load.
 (function () {
   var KEY = 'wordhands.config.v1';
-  var EDITABLE = ['mode', 'wave', 'wordSets', 'rowHeightVh', 'bgWordCount', 'scrollSpeed', 'gradient'];
+  var EDITABLE = ['mode', 'wave', 'games', 'wordSets', 'rowHeightVh', 'bgWordCount', 'scrollSpeed', 'gradient'];
   var defaults = JSON.parse(JSON.stringify(WH.config));
 
   function load() {
@@ -12,7 +12,7 @@
       if (saved) EDITABLE.forEach(function (k) {
         if (saved[k] == null) return;
         // Objects merge over defaults so settings saved by older versions stay valid.
-        WH.config[k] = k === 'wave' ? Object.assign({}, WH.config.wave, saved.wave) : saved[k];
+        WH.config[k] = (k === 'wave' || k === 'games') ? Object.assign({}, WH.config[k], saved[k]) : saved[k];
       });
     } catch (e) {}
   }
@@ -40,6 +40,7 @@
     '#whm textarea{width:100%;height:42vh;box-sizing:border-box;margin:10px 0;background:#061530;color:#e8f3ff;border:1px solid #2e5a9a;border-radius:6px;padding:8px;font:13px/1.35 Consolas,monospace}' +
     '#whm .g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 16px;margin:8px 0}' +
     '#whm select{background:#061530;color:#e8f3ff;border:1px solid #2e5a9a;border-radius:6px;padding:6px;font:inherit}' +
+    '#whm input[type=text],#whm input[type=number],#whm input:not([type]){background:#061530;color:#e8f3ff;border:1px solid #2e5a9a;border-radius:6px;padding:5px;font:inherit}' +
     '#whm label{display:flex;flex-direction:column;gap:4px}#whm input[type=color]{width:40px;height:28px;border:0;background:none;padding:0}' +
     '#whm .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}' +
     '#whm button{background:#1c5fae;color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}' +
@@ -69,7 +70,17 @@
     '<label>Dot density <input id="wvd" type="range" min="0.4" max="2" step="0.1"></label>' +
     '<label>Banners <input id="wvb" type="range" min="1" max="9" step="1"></label>' +
     '<label>Dot colors <span><input id="wvc0" type="color"> <input id="wvc1" type="color"></span></label>' +
-    '</div><div class="row">' +
+    '</div><h3>Games mode</h3><div class="g">' +
+    '<label>Round length (s) <input id="gmr" type="number" min="15" max="120"></label>' +
+    '<label>Claim code salt <input id="gms" type="text"></label>' +
+    [0, 1, 2].map(function (i) {
+      return '<label>Tier ' + (i + 1) + ' <span><input id="gtn' + i + '" size="7"> from <input id="gtm' + i + '" type="number" style="width:70px"> pts</span>' +
+             '<input id="gtp' + i + '" placeholder="Prize"></label>';
+    }).join('') +
+    '</div><small>Claims log (<span id="gmc">0</span> entries, newest last). Staff can check codes here.</small>' +
+    '<textarea id="gml" readonly style="height:14vh"></textarea>' +
+    '<div class="row"><button class="s" id="gmcopy">Copy log as CSV</button><button class="s" id="gmclear">Clear log</button></div>' +
+    '<div class="row">' +
     '<button id="whsave">Save &amp; apply</button><button class="s" id="whreset">Restore defaults</button>' +
     '<button class="s" id="whclose">Close</button></div></div>';
   document.body.appendChild(gear); document.body.appendChild(m);
@@ -84,6 +95,10 @@
     $('wva').value = wv.amplitude; $('wvl').value = wv.wavelength; $('wvs').value = wv.speed;
     $('wvc').value = wv.choppiness; $('wvd').value = wv.density; $('wvb').value = wv.banners;
     $('wvc0').value = wv.colors[0]; $('wvc1').value = wv.colors[1];
+    var gm = cfg.games;
+    $('gmr').value = gm.roundSec; $('gms').value = gm.salt;
+    gm.tiers.forEach(function (tr, i) { $('gtn' + i).value = tr.name; $('gtm' + i).value = tr.min; $('gtp' + i).value = tr.prize; });
+    if (WH.gamesLog) { $('gml').value = WH.gamesLog.csv(); $('gmc').textContent = WH.gamesLog.count(); }
     // Slider is inverted so right = denser (smaller rows).
     $('whd').value = 0.074 - cfg.rowHeightVh;
     $('whb').value = cfg.bgWordCount; $('whs').value = cfg.scrollSpeed;
@@ -102,6 +117,11 @@
     if (!sets.length) { alert('Add at least one word.'); return; }
     apply({
       mode: $('whmode').value,
+      games: Object.assign({}, WH.config.games, {
+        roundSec: Math.max(15, Math.min(120, +$('gmr').value || 40)), salt: $('gms').value || 'change-me',
+        tiers: [0, 1, 2].map(function (i) { return { name: $('gtn' + i).value, min: +$('gtm' + i).value, prize: $('gtp' + i).value }; })
+          .sort(function (a, b) { return a.min - b.min; }),
+      }),
       wave: { amplitude: +$('wva').value, wavelength: +$('wvl').value, speed: +$('wvs').value,
               choppiness: +$('wvc').value, density: +$('wvd').value, banners: +$('wvb').value,
               colors: [$('wvc0').value, $('wvc1').value] },
@@ -117,6 +137,13 @@
     fill(defaults);
   };
   $('whclose').onclick = close;
+  $('gmcopy').onclick = function () {
+    var ta = $('gml'); ta.value = WH.gamesLog.csv(); ta.select();
+    try { navigator.clipboard.writeText(ta.value); } catch (e) { document.execCommand('copy'); }
+  };
+  $('gmclear').onclick = function () {
+    if (confirm('Delete all claim codes from this PC?')) { WH.gamesLog.clear(); $('gml').value = WH.gamesLog.csv(); $('gmc').textContent = 0; }
+  };
   gear.onclick = open;
   m.onclick = function (e) { if (e.target === m) close(); };
 
@@ -130,7 +157,7 @@
     hideT = setTimeout(function () { gear.style.opacity = 0; }, 2500);
   });
 
-  WH.menu = { open: open, close: close };
+  WH.menu = { open: open, close: close, isOpen: function () { return m.classList.contains('on'); } };
   // Open on start once all modes are registered, unless running unattended.
   if (new URLSearchParams(location.search).get('kiosk') !== '1') addEventListener('load', open);
 })();

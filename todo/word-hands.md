@@ -46,3 +46,5 @@ Then commit and push to `claude/exciting-mccarthy-206iss`.
 - [ ] On-site: check each mode with a real LM-010 (especially the puppet arm mapping and the rain push/pull radius)
 - [x] Wave mode: fluid purple/cyan dot plane + scrolling banners, tunable in menu (height, length, speed, choppiness, density, banners, colors)
 - [x] Settings screen opens at startup (`?kiosk=1` skips it); Esc / Space / C open it
+- [x] Games mode: Bug Catcher, Word Sort, Packet Defender, Token Duel; hand-dwell/keyboard selection; prize tiers + claim codes + claims log in menu
+- [ ] On-site: tune tier thresholds after a few real test rounds per game (scores differ between games); check swipe-up threshold in Token Duel
