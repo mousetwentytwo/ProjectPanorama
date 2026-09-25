@@ -15,6 +15,7 @@ WH.config = {
     ],
     // Shown under the claim code; no specific gifts are promised.
     prizeText: 'Ask at the booth for available gifts',
+    showCode: true,          // false = no claim codes (tier + message only)
     salt: 'change-me',
     sortLabels: ['AI', 'SOFTWARE', 'SECURITY'],
   },

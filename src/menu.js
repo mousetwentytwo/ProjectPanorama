@@ -74,6 +74,7 @@
     '<label>Round length (s) <input id="gmr" type="number" min="15" max="120"></label>' +
     '<label>Claim code salt <input id="gms" type="text"></label>' +
     '<label>Prize message <input id="gmp" type="text"></label>' +
+    '<label style="flex-direction:row;align-items:center"><input id="gmsc" type="checkbox"> Show claim code</label>' +
     [0, 1, 2].map(function (i) {
       return '<label>Tier ' + (i + 1) + ' <span><input id="gtn' + i + '" size="7"> from <input id="gtm' + i + '" type="number" style="width:70px"> pts</span></label>';
     }).join('') +
@@ -98,7 +99,7 @@
     var gm = cfg.games;
     $('gmr').value = gm.roundSec; $('gms').value = gm.salt;
     gm.tiers.forEach(function (tr, i) { $('gtn' + i).value = tr.name; $('gtm' + i).value = tr.min; });
-    $('gmp').value = gm.prizeText;
+    $('gmp').value = gm.prizeText; $('gmsc').checked = gm.showCode !== false;
     if (WH.gamesLog) { $('gml').value = WH.gamesLog.csv(); $('gmc').textContent = WH.gamesLog.count(); }
     // Slider is inverted so right = denser (smaller rows).
     $('whd').value = 0.074 - cfg.rowHeightVh;
@@ -119,6 +120,7 @@
     apply({
       mode: $('whmode').value,
       games: Object.assign({}, WH.config.games, {
+        showCode: $('gmsc').checked,
         prizeText: $('gmp').value || 'Ask at the booth for available gifts',
         roundSec: Math.max(15, Math.min(120, +$('gmr').value || 40)), salt: $('gms').value || 'change-me',
         tiers: [0, 1, 2].map(function (i) { return { name: $('gtn' + i).value, min: +$('gtm' + i).value }; })

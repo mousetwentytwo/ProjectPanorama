@@ -307,7 +307,7 @@
     if (state !== 'play') return;
     var tier = tierFor(score), real = sawReal || forceReal === true;
     result = { score: score, tier: tier, code: null, best: WH.gamesLog.setBest(game.key, score) };
-    if (tier && real) {
+    if (tier && real && cfg().showCode !== false) {
       result.code = code(tier, score);
       WH.gamesLog.add({ time: new Date().toISOString(), game: game.key, score: score, tier: tier.name, code: result.code });
     }
@@ -414,7 +414,8 @@
             ctx.fillStyle = 'rgba(255,255,255,0.95)'; rrect(ctx, W / 2 - H * 0.3, H * 0.56, H * 0.6, H * 0.16, 18); ctx.fill();
             label(ctx, result.code, W / 2, H * 0.64, H * 0.1, 900, '#0a1f4a');
             label(ctx, 'Show this code • ' + cfg().prizeText, W / 2, H * 0.79, H * 0.032, 700, '#cfe6ff');
-          } else label(ctx, 'Practice round (no hands detected), no code', W / 2, H * 0.62, H * 0.032, 700, '#cfe6ff');
+          } else if (cfg().showCode === false) label(ctx, 'Congratulations! ' + cfg().prizeText, W / 2, H * 0.62, H * 0.038, 800, '#cfe6ff');
+          else label(ctx, 'Practice round (no hands detected), no code', W / 2, H * 0.62, H * 0.032, 700, '#cfe6ff');
         } else {
           label(ctx, 'TRY AGAIN!', W / 2, H * 0.5, H * 0.07, 900, '#fff');
           label(ctx, (cfg().tiers[0] ? cfg().tiers[0].min : 0) + ' points wins a gift', W / 2, H * 0.6, H * 0.035, 700, '#cfe6ff');
