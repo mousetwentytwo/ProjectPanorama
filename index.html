@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
   html, body { margin: 0; height: 100%; background: #0a2a5c; overflow: hidden; cursor: none; }
-  canvas { display: block; width: 100vw; height: 100vh; }
+  body.ptr { cursor: crosshair; }
+  canvas { display: block; touch-action: none; width: 100vw; height: 100vh; }
   #status { position: fixed; left: 16px; bottom: 12px; font: 14px/1.2 system-ui, sans-serif;
             color: rgba(255,255,255,.45); letter-spacing: .05em; }
   #hint { position: fixed; left: 0; right: 0; bottom: 6vh; text-align: center;
@@ -22,6 +23,8 @@
 <script src="src/config.js"></script>
 <script src="src/menu.js"></script>
 <script src="src/leap.js"></script>
+<script src="src/pointer.js"></script>
+<script src="src/leapbadge.js"></script>
 <script src="src/sky.js"></script>
 <script src="src/hands.js"></script>
 <script src="src/util.js"></script>
