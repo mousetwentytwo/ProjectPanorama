@@ -1,5 +1,5 @@
 // Mode "games": Leap minigames with a score, prize tiers and claim codes.
-// SELECT (hover a tile / keys 1-4) -> INTRO (3-2-1) -> PLAY -> RESULT (tier, prize, code) -> SELECT.
+// SELECT (hover a tile / keys 1-5, Space = back to select) -> INTRO (3-2-1) -> PLAY -> RESULT (tier, prize, code) -> SELECT.
 // Demo hands never play: real hands (or the keyboard) are needed, and only rounds with real hands earn a code.
 (function () {
   var U = WH.util;
@@ -139,67 +139,136 @@
     },
   };
 
-  // ---------------------------------------------------------------- Packet Defender
-  var GOOD = ['HTTPS', 'DNS', 'API', 'SSH', 'NTP', 'SMTP'], BAD = ['MALWARE', 'DDoS', 'PHISH', 'RANSOM', 'WORM', 'SQLi'];
-  var packetDefender = {
-    key: 'packets', name: 'PACKET DEFENDER', rule: 'Your palm is a shield: block red packets, let green ones through.',
-    start: function () { this.packets = []; this.next = 0.6; this.hp = 5; this.hurt = 0; },
-    update: function (dt, progress) {
-      var self = this, cx = W / 2, cy = H * 0.56, sr = H * 0.07;
-      this.next -= dt; this.hurt = Math.max(0, this.hurt - dt * 2);
-      if (this.next <= 0) {
-        var a = rand(0, 6.28), R = Math.hypot(W, H) * 0.55, bad = Math.random() < 0.5;
-        this.packets.push({ x: cx + Math.cos(a) * R, y: cy + Math.sin(a) * R, bad: bad, word: pick(bad ? BAD : GOOD), sp: H * rand(0.16, 0.24) * (1 + progress) });
-        this.next = 1.1 - 0.65 * progress;
-      }
-      this.packets = this.packets.filter(function (p) {
-        var dx = cx - p.x, dy = cy - p.y, d = Math.hypot(dx, dy);
-        p.x += dx / d * p.sp * dt; p.y += dy / d * p.sp * dt;
-        for (var i = 0; i < pts.length; i++) {
-          var h = pts[i], r = H * 0.1 * (1 - 0.5 * h.grab);
-          if (dist(p.x, p.y, h.palm[0], h.palm[1]) < r + H * 0.02) { add(p.bad ? 10 : -5, p.x, p.y - H * 0.04); return false; }
+  // ---------------------------------------------------------------- Defender (Packet Defender, SAVE UX)
+  // Shared "shield the core" game: bad items fly at the core, the palm blocks them, good items should get through.
+  // Sizes use S = min(W, H) so the core and shield fit a portrait screen too (S = H on a landscape screen).
+  function makeDefender(o) {
+    return {
+      key: o.key, name: o.name, rule: o.rule,
+      start: function () { this.packets = []; this.next = 0.6; this.hp = 5; this.hurt = 0; },
+      update: function (dt, progress) {
+        var self = this, S = Math.min(W, H), cx = W / 2, cy = H * 0.56, sr = S * 0.07 * (o.coreScale || 1);
+        this.next -= dt; this.hurt = Math.max(0, this.hurt - dt * 2);
+        if (this.next <= 0) {
+          var a = rand(0, 6.28), R = Math.hypot(W, H) * 0.55, bad = Math.random() < 0.5;
+          this.packets.push({ x: cx + Math.cos(a) * R, y: cy + Math.sin(a) * R, bad: bad, word: pick(bad ? o.bad : o.good), sp: S * rand(0.16, 0.24) * (1 + progress) });
+          this.next = 1.1 - 0.65 * progress;
         }
-        if (d < sr) {
-          if (p.bad) { self.hp--; self.hurt = 1; pop(cx, cy - sr * 1.6, '-1 HP', '#ff6b8a'); combo = 1; }
-          else add(2, cx, cy - sr * 1.6);
-          return false;
-        }
-        return true;
-      });
-      if (this.hp <= 0) finish();
-    },
-    draw: function (ctx) {
-      var cx = W / 2, cy = H * 0.56, sr = H * 0.07;
-      ctx.save();
-      ctx.shadowColor = this.hurt > 0 ? '#ff4a6a' : '#6fd8ff'; ctx.shadowBlur = H * 0.04;
-      ctx.fillStyle = this.hurt > 0 ? '#5a1830' : '#10325e';
-      rrect(ctx, cx - sr, cy - sr * 1.2, sr * 2, sr * 2.4, 10); ctx.fill();
-      ctx.shadowBlur = 0; ctx.fillStyle = '#7df9ff';
-      for (var i = 0; i < 4; i++) ctx.fillRect(cx - sr * 0.7, cy - sr * 0.9 + i * sr * 0.55, sr * 1.4, sr * 0.12);
-      for (var k = 0; k < 5; k++) { ctx.fillStyle = k < this.hp ? '#4dff9a' : 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.arc(cx - sr + k * sr * 0.5, cy + sr * 1.55, sr * 0.14, 0, 6.283); ctx.fill(); }
-      ctx.restore();
-      label(ctx, 'SERVER', cx, cy - sr * 1.45, H * 0.022, 800, '#bfe8ff');
-      this.packets.forEach(function (p) {
-        ctx.font = U.font(H * 0.024, 800);
-        var tw = ctx.measureText(p.word).width + 20;
-        ctx.fillStyle = p.bad ? 'rgba(255,70,100,0.9)' : 'rgba(60,220,140,0.9)';
-        rrect(ctx, p.x - tw / 2, p.y - H * 0.022, tw, H * 0.044, H * 0.022); ctx.fill();
-        label(ctx, p.word, p.x, p.y, H * 0.024, 800, '#fff');
-      });
-      pts.forEach(function (h) {
-        var r = H * 0.1 * (1 - 0.5 * h.grab);
-        ctx.fillStyle = 'rgba(125,249,255,0.15)'; ctx.strokeStyle = 'rgba(125,249,255,0.9)'; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.arc(h.palm[0], h.palm[1], r, 0, 6.283); ctx.fill(); ctx.stroke();
-      });
-    },
-    icon: function (ctx, x, y, s) {
-      ctx.fillStyle = '#10325e'; ctx.strokeStyle = '#7df9ff'; ctx.lineWidth = s * 0.04;
+        this.packets = this.packets.filter(function (p) {
+          var dx = cx - p.x, dy = cy - p.y, d = Math.hypot(dx, dy);
+          p.x += dx / d * p.sp * dt; p.y += dy / d * p.sp * dt;
+          for (var i = 0; i < pts.length; i++) {
+            var h = pts[i], r = S * 0.1 * (1 - 0.5 * h.grab);
+            if (dist(p.x, p.y, h.palm[0], h.palm[1]) < r + S * 0.02) { add(p.bad ? 10 : -5, p.x, p.y - S * 0.04); return false; }
+          }
+          if (d < sr) {
+            if (p.bad) { self.hp--; self.hurt = 1; pop(cx, cy - sr * 1.6, '-1 HP', '#ff6b8a'); combo = 1; }
+            else add(2, cx, cy - sr * 1.6);
+            return false;
+          }
+          return true;
+        });
+        if (this.hp <= 0) finish();
+      },
+      draw: function (ctx) {
+        var S = Math.min(W, H), cx = W / 2, cy = H * 0.56, sr = S * 0.07 * (o.coreScale || 1);
+        ctx.save();
+        o.drawCore(ctx, cx, cy, sr, this.hurt, S);
+        for (var k = 0; k < 5; k++) { ctx.fillStyle = k < this.hp ? '#4dff9a' : 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.arc(cx - sr + k * sr * 0.5, cy + sr * 1.55, sr * 0.14, 0, 6.283); ctx.fill(); }
+        ctx.restore();
+        label(ctx, o.label, cx, cy - sr * 1.45, S * 0.022, 800, '#bfe8ff');
+        this.packets.forEach(function (p) {
+          ctx.font = U.font(S * 0.024, 800);
+          var tw = ctx.measureText(p.word).width + S * 0.02;
+          ctx.fillStyle = p.bad ? 'rgba(255,70,100,0.9)' : 'rgba(60,220,140,0.9)';
+          rrect(ctx, p.x - tw / 2, p.y - S * 0.022, tw, S * 0.044, S * 0.022); ctx.fill();
+          label(ctx, p.word, p.x, p.y, S * 0.024, 800, '#fff');
+        });
+        pts.forEach(function (h) {
+          var r = S * 0.1 * (1 - 0.5 * h.grab);
+          ctx.fillStyle = 'rgba(125,249,255,0.15)'; ctx.strokeStyle = 'rgba(125,249,255,0.9)'; ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.arc(h.palm[0], h.palm[1], r, 0, 6.283); ctx.fill(); ctx.stroke();
+        });
+      },
+      icon: o.icon,
+    };
+  }
+  // Server-rack core (Packet Defender, and SAVE UX before an image is uploaded).
+  function drawRack(ctx, cx, cy, sr, hurt, S) {
+    ctx.shadowColor = hurt > 0 ? '#ff4a6a' : '#6fd8ff'; ctx.shadowBlur = S * 0.04;
+    ctx.fillStyle = hurt > 0 ? '#5a1830' : '#10325e';
+    rrect(ctx, cx - sr, cy - sr * 1.2, sr * 2, sr * 2.4, 10); ctx.fill();
+    ctx.shadowBlur = 0; ctx.fillStyle = '#7df9ff';
+    for (var i = 0; i < 4; i++) ctx.fillRect(cx - sr * 0.7, cy - sr * 0.9 + i * sr * 0.55, sr * 1.4, sr * 0.12);
+  }
+  function defenderIcon(core, good, bad) {
+    return function (ctx, x, y, s) {
+      ctx.fillStyle = '#10325e'; ctx.strokeStyle = core; ctx.lineWidth = s * 0.04;
       rrect(ctx, x - s * 0.18, y - s * 0.25, s * 0.36, s * 0.5, 5); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#ff4a6a'; ctx.beginPath(); ctx.arc(x - s * 0.45, y - s * 0.2, s * 0.08, 0, 6.283); ctx.fill();
-      ctx.fillStyle = '#4dff9a'; ctx.beginPath(); ctx.arc(x + s * 0.45, y + s * 0.2, s * 0.08, 0, 6.283); ctx.fill();
+      ctx.fillStyle = bad; ctx.beginPath(); ctx.arc(x - s * 0.45, y - s * 0.2, s * 0.08, 0, 6.283); ctx.fill();
+      ctx.fillStyle = good; ctx.beginPath(); ctx.arc(x + s * 0.45, y + s * 0.2, s * 0.08, 0, 6.283); ctx.fill();
       ctx.strokeStyle = '#7df9ff'; ctx.beginPath(); ctx.arc(x - s * 0.32, y - s * 0.1, s * 0.14, 0, 6.283); ctx.stroke();
-    },
-  };
+    };
+  }
+
+  var GOOD = ['HTTPS', 'DNS', 'API', 'SSH', 'NTP', 'SMTP'], BAD = ['MALWARE', 'DDoS', 'PHISH', 'RANSOM', 'WORM', 'SQLi'];
+  var packetDefender = makeDefender({
+    key: 'packets', name: 'PACKET DEFENDER', rule: 'Your palm is a shield: block red packets, let green ones through.',
+    label: 'SERVER', good: GOOD, bad: BAD, drawCore: drawRack, icon: defenderIcon('#7df9ff', '#4dff9a', '#ff4a6a'),
+  });
+
+  // ---------------------------------------------------------------- SAVE UX (Defender variant)
+  // The core is a product image: upload one by dropping a file on the window or in the settings menu.
+  var UX_BAD = ['AI only', 'Inconsistency', 'Fix later', 'Design Overhead', 'No Testing', 'Experience Gap',
+    'Cognitive Overload', 'Use Papyrus', 'No user', 'More meetings', 'Meetings', 'Last minute change'];
+  var UX_GOOD = ['Usability testing', 'WCAG', 'User Journey', 'Design System', 'Research', 'Affinity mapping',
+    'Prototyping', 'Validation', 'Ideation', 'Workshop', 'Iteration', 'Figma'];
+  var IMG_KEY = 'wordhands.saveux.img', productImg = null;
+  function loadImg(src) { var im = new Image(); im.onload = function () { productImg = im; }; im.src = src; }
+  try { var savedImg = localStorage.getItem(IMG_KEY); if (savedImg) loadImg(savedImg); } catch (e) {}
+  // Downscale to <= 512 px so the data URL fits in localStorage.
+  function setProductImage(file, done) {
+    if (!file || !/^image\//.test(file.type)) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      var im = new Image();
+      im.onload = function () {
+        var k = Math.min(1, 512 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+        c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        var url = c.toDataURL(file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png', 0.9);
+        try { localStorage.setItem(IMG_KEY, url); } catch (e) {}
+        loadImg(url); if (done) done();
+      };
+      im.src = rd.result;
+    };
+    rd.readAsDataURL(file);
+  }
+  function resetProductImage() { productImg = null; try { localStorage.removeItem(IMG_KEY); } catch (e) {} }
+  addEventListener('dragover', function (e) { e.preventDefault(); });
+  addEventListener('drop', function (e) {
+    e.preventDefault();
+    var f = e.dataTransfer && e.dataTransfer.files[0];
+    if (f) setProductImage(f);
+  });
+  function drawProduct(ctx, cx, cy, sr, hurt, S) {
+    if (!productImg) return drawRack(ctx, cx, cy, sr, hurt, S);
+    var box = sr * 2.4, k = Math.min(box / productImg.width, box / productImg.height);
+    var w = productImg.width * k, h = productImg.height * k;
+    ctx.save();
+    ctx.shadowColor = hurt > 0 ? '#ff4a6a' : '#6fd8ff'; ctx.shadowBlur = S * 0.05;
+    ctx.fillStyle = 'rgba(16,50,94,0.6)'; rrect(ctx, cx - w / 2 - 8, cy - h / 2 - 8, w + 16, h + 16, 14); ctx.fill();
+    ctx.shadowBlur = 0;
+    rrect(ctx, cx - w / 2, cy - h / 2, w, h, 10); ctx.clip();
+    ctx.drawImage(productImg, cx - w / 2, cy - h / 2, w, h);
+    if (hurt > 0) { ctx.fillStyle = 'rgba(255,60,90,' + (0.45 * hurt).toFixed(2) + ')'; ctx.fillRect(cx - w / 2, cy - h / 2, w, h); }
+    ctx.restore();
+  }
+  var saveUx = makeDefender({
+    key: 'saveux', name: 'SAVE UX', rule: 'Block bad practice (red), let good UX (green) reach the product.',
+    label: 'PRODUCT', good: UX_GOOD, bad: UX_BAD, drawCore: drawProduct, coreScale: 1.25,
+    icon: defenderIcon('#ffd24a', '#4dff9a', '#ff4a6a'),
+  });
 
   // ---------------------------------------------------------------- Token Duel
   var AI_WORDS = ['HALLUCINATE', 'IGNORE PREVIOUS', 'LOREM IPSUM', 'AS AN AI', 'TOKEN LIMIT', '404', 'OVERFIT', 'UNDEFINED', 'NaN', 'SPAM'];
@@ -285,7 +354,7 @@
     },
   };
 
-  var GAMES = [bugCatcher, wordSort, packetDefender, tokenDuel];
+  var GAMES = [bugCatcher, wordSort, packetDefender, tokenDuel, saveUx];
 
   // ---------------------------------------------------------------- flow
   function go(s) { state = s; stateT = 0; dwell = 0; dwellIdx = -1; openHold = 0; }
@@ -320,18 +389,34 @@
     if (WH.menu && WH.menu.isOpen()) return;
     lastActivity = t;
     if (state === 'select') {
-      if (e.key >= '1' && e.key <= '4') begin(+e.key - 1);
-      else if (e.key === 'ArrowRight') sel = (sel + 1) % 4;
-      else if (e.key === 'ArrowLeft') sel = (sel + 3) % 4;
+      var n = GAMES.length;
+      if (e.key >= '1' && e.key <= String(n)) begin(+e.key - 1);
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') sel = (sel + 1) % n;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') sel = (sel + n - 1) % n;
+      else if (e.key === ' ') { e.preventDefault(); begin(sel); }
       else if (e.key === 'Enter') begin(sel);
-    } else if (e.key === 'Backspace') go('select');
+    } else if (e.key === 'Backspace' || e.key === ' ') { e.preventDefault(); go('select'); } // Space = quick game select
     else if (state === 'result' && e.key === 'Enter') go('select');
   });
 
+  // One row on a landscape screen; a grid (2 columns) on a portrait screen.
   function tiles() {
-    var n = GAMES.length, gap = W * 0.025, tw = Math.min((W - gap * (n + 1)) / n, H * 0.5), x0 = (W - (tw * n + gap * (n - 1))) / 2;
-    return GAMES.map(function (g, i) { return { x: x0 + i * (tw + gap), y: H * 0.3, w: tw, h: H * 0.48 }; });
+    var n = GAMES.length;
+    if (H <= W) {
+      var gap = W * 0.02, tw = Math.min((W - gap * (n + 1)) / n, H * 0.5), x0 = (W - (tw * n + gap * (n - 1))) / 2;
+      return GAMES.map(function (g, i) { return { x: x0 + i * (tw + gap), y: H * 0.3, w: tw, h: H * 0.48 }; });
+    }
+    var cols = 2, rows = Math.ceil(n / cols), g2 = W * 0.04, cw = (W - g2 * (cols + 1)) / cols;
+    var ch = Math.min(cw * 1.25, (H * 0.68 - g2 * (rows - 1)) / rows), y0 = H * 0.26;
+    return GAMES.map(function (g, i) {
+      var r = Math.floor(i / cols), inRow = Math.min(cols, n - r * cols), c = i % cols;
+      var rx = (W - (cw * inRow + g2 * (inRow - 1))) / 2;
+      return { x: rx + c * (cw + g2), y: y0 + r * (ch + g2), w: cw, h: ch };
+    });
   }
+  // ?game=<key> (with ?mode=games) jumps straight into that game's intro.
+  var wantGame = new URLSearchParams(location.search).get('game');
+  GAMES.forEach(function (g, i) { if (g.key === wantGame) { sel = i; game = g; state = 'intro'; } });
 
   U.register('games', 'Games: minigames with prizes', {
     fullField: true, noSetSwitch: true, ownHint: true,
@@ -366,8 +451,8 @@
       ctx.fillStyle = 'rgba(3,12,34,0.45)'; ctx.fillRect(0, 0, W, H); // calm the sky behind the game
 
       if (state === 'select') {
-        label(ctx, 'PLAY & WIN', W / 2, H * 0.12, H * 0.08, 900, U.gradient(ctx, W * 0.25, 0, W * 0.75, 0));
-        label(ctx, 'Hover a game with your hand, or press 1-4', W / 2, H * 0.21, H * 0.03, 600, '#cfe6ff');
+        label(ctx, 'PLAY & WIN', W / 2, H * 0.12, Math.min(H * 0.08, W * 0.11), 900, U.gradient(ctx, W * 0.25, 0, W * 0.75, 0));
+        label(ctx, 'Hover a game with your hand, or press 1-' + GAMES.length, W / 2, H * 0.21, Math.min(H * 0.03, W * 0.04), 600, '#cfe6ff');
         tiles().forEach(function (r, i) {
           var g = GAMES[i], on = i === sel;
           ctx.fillStyle = on ? 'rgba(30,70,140,0.75)' : 'rgba(10,30,70,0.6)';
@@ -386,41 +471,45 @@
         });
         if (demoNow) {
           ctx.globalAlpha = 0.6 + 0.4 * Math.sin(now * 0.004);
-          label(ctx, 'HOLD YOUR HAND UP TO PLAY', W / 2, H * 0.88, H * 0.04, 900, '#fff');
+          label(ctx, WH.leap.connected() ? 'HOLD YOUR HAND UP TO PLAY' : 'HOLD YOUR HAND UP OR MOVE THE MOUSE', W / 2, H > W ? H * 0.97 : H * 0.88, Math.min(H * 0.04, W * 0.04), 900, '#fff');
           ctx.globalAlpha = 1;
         }
       } else if (state === 'intro') {
-        label(ctx, game.name, W / 2, H * 0.3, H * 0.09, 900, U.gradient(ctx, W * 0.2, 0, W * 0.8, 0));
-        wrap(ctx, game.rule, W / 2, H * 0.43, W * 0.6, H * 0.04);
+        var S = Math.min(W, H);
+        label(ctx, game.name, W / 2, H * 0.3, S * 0.09, 900, U.gradient(ctx, W * 0.2, 0, W * 0.8, 0));
+        wrap(ctx, game.rule, W / 2, H * 0.43, W * (H > W ? 0.85 : 0.6), S * 0.04);
         var n = Math.ceil(3.5 - stateT);
         label(ctx, n > 0 ? String(n) : 'GO!', W / 2, H * 0.66, H * 0.2, 900, '#fff');
       } else if (state === 'play') {
         game.draw(ctx);
         // HUD: score, time bar, combo.
-        label(ctx, 'SCORE ' + score, W * 0.03, H * 0.06, H * 0.045, 900, '#fff', 'left');
-        label(ctx, 'x' + Math.floor(combo), W * 0.97, H * 0.06, H * 0.045, 900, Math.floor(combo) > 1 ? '#ffd24a' : 'rgba(255,255,255,0.5)', 'right');
+        var hs = Math.min(H * 0.045, W * 0.05);
+        label(ctx, 'SCORE ' + score, W * 0.03, H * 0.06, hs, 900, '#fff', 'left');
+        label(ctx, 'x' + Math.floor(combo), W * 0.97, H * 0.06, hs, 900, Math.floor(combo) > 1 ? '#ffd24a' : 'rgba(255,255,255,0.5)', 'right');
         var f = Math.max(0, timeLeft / cfg().roundSec);
-        ctx.fillStyle = 'rgba(255,255,255,0.15)'; rrect(ctx, W * 0.3, H * 0.045, W * 0.4, H * 0.03, H * 0.015); ctx.fill();
+        var by = H > W ? H * 0.085 : H * 0.045, bh = Math.min(H, W) * 0.03; // portrait: bar under the score row
+        ctx.fillStyle = 'rgba(255,255,255,0.15)'; rrect(ctx, W * 0.3, by, W * 0.4, bh, bh / 2); ctx.fill();
         ctx.fillStyle = f < 0.2 ? '#ff6b8a' : U.gradient(ctx, W * 0.3, 0, W * 0.7, 0);
-        rrect(ctx, W * 0.3, H * 0.045, Math.max(H * 0.03, W * 0.4 * f), H * 0.03, H * 0.015); ctx.fill();
-        label(ctx, game.name, W / 2, H * 0.105, H * 0.022, 800, 'rgba(255,255,255,0.6)');
+        rrect(ctx, W * 0.3, by, Math.max(bh, W * 0.4 * f), bh, bh / 2); ctx.fill();
+        label(ctx, game.name, W / 2, by + bh * 2, Math.min(H, W) * 0.022, 800, 'rgba(255,255,255,0.6)');
       } else if (state === 'result') {
-        label(ctx, 'SCORE', W / 2, H * 0.14, H * 0.04, 800, '#cfe6ff');
-        label(ctx, String(result.score), W / 2, H * 0.27, H * 0.16, 900, U.gradient(ctx, W * 0.3, 0, W * 0.7, 0));
-        if (result.best) label(ctx, "NEW BEST TODAY!", W / 2, H * 0.38, H * 0.035, 900, '#ffd24a');
+        var R = Math.min(H, W * 0.75);
+        label(ctx, 'SCORE', W / 2, H * 0.14, R * 0.04, 800, '#cfe6ff');
+        label(ctx, String(result.score), W / 2, H * 0.27, R * 0.16, 900, U.gradient(ctx, W * 0.3, 0, W * 0.7, 0));
+        if (result.best) label(ctx, "NEW BEST TODAY!", W / 2, H * 0.38, R * 0.035, 900, '#ffd24a');
         if (result.tier) {
-          label(ctx, result.tier.name.toUpperCase() + ' TIER', W / 2, H * 0.48, H * 0.055, 900, '#fff');
+          label(ctx, result.tier.name.toUpperCase() + ' TIER', W / 2, H * 0.48, R * 0.055, 900, '#fff');
           if (result.code) {
-            ctx.fillStyle = 'rgba(255,255,255,0.95)'; rrect(ctx, W / 2 - H * 0.3, H * 0.56, H * 0.6, H * 0.16, 18); ctx.fill();
-            label(ctx, result.code, W / 2, H * 0.64, H * 0.1, 900, '#0a1f4a');
-            label(ctx, 'Show this code • ' + cfg().prizeText, W / 2, H * 0.79, H * 0.032, 700, '#cfe6ff');
-          } else if (cfg().showCode === false) label(ctx, 'Congratulations! ' + cfg().prizeText, W / 2, H * 0.62, H * 0.038, 800, '#cfe6ff');
-          else label(ctx, 'Practice round (no hands detected), no code', W / 2, H * 0.62, H * 0.032, 700, '#cfe6ff');
+            ctx.fillStyle = 'rgba(255,255,255,0.95)'; rrect(ctx, W / 2 - R * 0.3, H * 0.56, R * 0.6, H * 0.16, 18); ctx.fill();
+            label(ctx, result.code, W / 2, H * 0.64, R * 0.1, 900, '#0a1f4a');
+            label(ctx, 'Show this code • ' + cfg().prizeText, W / 2, H * 0.79, R * 0.032, 700, '#cfe6ff');
+          } else if (cfg().showCode === false) label(ctx, 'Congratulations! ' + cfg().prizeText, W / 2, H * 0.62, R * 0.038, 800, '#cfe6ff');
+          else label(ctx, 'Practice round (no hands detected), no code', W / 2, H * 0.62, R * 0.032, 700, '#cfe6ff');
         } else {
-          label(ctx, 'TRY AGAIN!', W / 2, H * 0.5, H * 0.07, 900, '#fff');
-          label(ctx, (cfg().tiers[0] ? cfg().tiers[0].min : 0) + ' points wins a gift', W / 2, H * 0.6, H * 0.035, 700, '#cfe6ff');
+          label(ctx, 'TRY AGAIN!', W / 2, H * 0.5, R * 0.07, 900, '#fff');
+          label(ctx, (cfg().tiers[0] ? cfg().tiers[0].min : 0) + ' points wins a gift', W / 2, H * 0.6, R * 0.035, 700, '#cfe6ff');
         }
-        label(ctx, 'Hold an open hand or press Enter to continue', W / 2, H * 0.9, H * 0.028, 600, 'rgba(255,255,255,0.7)');
+        label(ctx, 'Hold an open hand or press Enter to continue', W / 2, H * 0.9, R * 0.028, 600, 'rgba(255,255,255,0.7)');
       }
 
       pops.forEach(function (p) { ctx.globalAlpha = Math.max(0, p.life); label(ctx, p.text, p.x, p.y, H * 0.04, 900, p.color); });
@@ -448,6 +537,7 @@
 
   // Test hooks (used by automated checks; harmless in production).
   WH.games = {
+    setProductImage: setProductImage, resetProductImage: resetProductImage, hasProductImage: function () { return !!productImg; },
     state: function () { return state; },
     _finish: function (s) { if (state !== 'play') { score = 0; game = game || GAMES[0]; timeLeft = 1; go('play'); } score = s; finish(true); return result; },
   };

@@ -24,6 +24,9 @@
     fps += (1 / Math.max(dt, 1e-3) - fps) * 0.05;
 
     var live = FORCE_DEMO ? [] : WH.leap.hands();
+    var ptr = !live.length && !FORCE_DEMO && WH.pointer ? WH.pointer.hands() : [];
+    if (ptr.length) live = ptr; // mouse / touch when no sensor hands
+    document.body.classList.toggle('ptr', !!ptr.length || !WH.leap.connected());
     if (live.length) lastLiveAt = now;
     var demo = now - lastLiveAt > WH.config.idleToDemoMs;
     var hands = demo ? WH.demo.hands(now) : live;
@@ -35,7 +38,7 @@
     if (DEBUG) WH.hands.debug(ctx, hands, W, H);
 
     hint.style.opacity = demo && !mode.ownHint ? 1 : 0;
-    status.textContent = (WH.leap.connected() ? 'sensor connected' : 'sensor offline') +
+    status.textContent = (WH.leap.connected() ? 'sensor connected' : 'sensor offline') + (ptr.length ? ' · mouse' : '') +
       (demo ? ' · demo' : '') + (DEBUG ? ' · ' + fps.toFixed(0) + ' fps' : '');
     window.__fps = fps;
     requestAnimationFrame(frame);

@@ -1,4 +1,5 @@
-// Config menu: opens on start (skip with ?kiosk=1). Press C, Esc or Space (or click the gear in the
+// Config menu: opens on start (skip with ?kiosk=1). Press C, Esc or Space (Space only outside games mode,
+// where it opens the quick game select) (or click the gear in the
 // top-right corner, shown when the mouse moves) to open it again.
 // Settings are stored in this browser's localStorage and applied on the next load.
 (function () {
@@ -75,6 +76,7 @@
     '<label>Claim code salt <input id="gms" type="text"></label>' +
     '<label>Prize message <input id="gmp" type="text"></label>' +
     '<label style="flex-direction:row;align-items:center"><input id="gmsc" type="checkbox"> Show claim code</label>' +
+    '<label>SAVE UX product image <small>(or drop an image file on the window)</small><span><input id="gmimg" type="file" accept="image/*"> <button class="s" id="gmimgr" type="button">Reset</button> <small id="gmimgs"></small></span></label>' +
     [0, 1, 2].map(function (i) {
       return '<label>Tier ' + (i + 1) + ' <span><input id="gtn' + i + '" size="7"> from <input id="gtm' + i + '" type="number" style="width:70px"> pts</span></label>';
     }).join('') +
@@ -106,7 +108,7 @@
     $('whb').value = cfg.bgWordCount; $('whs').value = cfg.scrollSpeed;
     $('whc').innerHTML = cfg.gradient.map(function (c) { return '<input type="color" value="' + c + '">'; }).join(' ');
   }
-  function open() { fill(WH.config); m.classList.add('on'); document.body.style.cursor = 'default'; }
+  function open() { fill(WH.config); if (WH.games) imgStatus(); m.classList.add('on'); document.body.style.cursor = 'default'; }
   function close() { m.classList.remove('on'); document.body.style.cursor = ''; }
   function apply(cfg) {
     EDITABLE.forEach(function (k) { WH.config[k] = cfg[k]; });
@@ -148,12 +150,16 @@
   $('gmclear').onclick = function () {
     if (confirm('Delete all claim codes from this PC?')) { WH.gamesLog.clear(); $('gml').value = WH.gamesLog.csv(); $('gmc').textContent = 0; }
   };
+  function imgStatus() { $('gmimgs').textContent = WH.games && WH.games.hasProductImage() ? 'custom image set' : 'default'; }
+  $('gmimg').onchange = function () { var f = this.files[0]; if (f && WH.games) WH.games.setProductImage(f, imgStatus); };
+  $('gmimgr').onclick = function () { if (WH.games) WH.games.resetProductImage(); $('gmimg').value = ''; imgStatus(); };
   gear.onclick = open;
   m.onclick = function (e) { if (e.target === m) close(); };
 
   addEventListener('keydown', function (e) {
     if (m.classList.contains('on')) { if (e.key === 'Escape') close(); return; }
-    if (e.key === 'c' || e.key === 'C' || e.key === 'Escape' || e.key === ' ') { e.preventDefault(); open(); }
+    var games = (new URLSearchParams(location.search).get('mode') || WH.config.mode) === 'games';
+    if (e.key === 'c' || e.key === 'C' || e.key === 'Escape' || (e.key === ' ' && !games)) { e.preventDefault(); open(); }
   });
   var hideT;
   addEventListener('mousemove', function () {

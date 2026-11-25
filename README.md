@@ -53,8 +53,10 @@ Every mode uses the same hand tracking, word sets, gradient and demo hands. A fi
 
 ## Games mode (play & win)
 
-A selection screen shows 4 games. Choose one by holding your hand over a tile for 1.5 s, or with keys **1-4**
-(or arrows + Enter). Each round lasts 40 s (set in the menu), then the result screen shows the score, the prize tier and a claim code.
+A selection screen shows 5 games (one row on a landscape screen, a 2-column grid on a portrait screen). Choose one by
+holding your hand over a tile for 1.5 s, or with keys **1-5** (or arrows + Enter / Space). **Space** during a game or on
+the result screen goes straight back to the selection screen (quick game select). `?game=saveux` (or another game key)
+opens that game directly. Each round lasts 40 s (set in the menu), then the result screen shows the score, the prize tier and a claim code.
 
 | Game | How to play | Points |
 |------|-------------|--------|
@@ -62,6 +64,10 @@ A selection screen shows 4 games. Choose one by holding your hand over a tile fo
 | Word Sort | Push falling words into the right bucket (AI / Software / Security = word sets 1-3) | right +10, wrong -5 |
 | Packet Defender | Your palm is a shield around the server: block red packets, let green through | red blocked +10, green blocked -5, green delivered +2; 5 red hits end the round |
 | Token Duel | Swipe your hand up (toward the screen) to fire words at the AI; fist-catch its tokens to reload | hit +15, catch +5, draining the AI +200; 5 misses end the round |
+| SAVE UX | Packet Defender variant: shield the PRODUCT. Block bad practice (red: AI only, Fix later, More meetings...), let good UX (green: Usability testing, WCAG, Figma...) through | same as Packet Defender |
+
+**SAVE UX product image.** Drop an image file anywhere on the window, or pick one in the settings (Games mode ->
+SAVE UX product image; Reset returns to the default box). It is scaled to max 512 px and kept in this browser.
 
 Consecutive good hits build a combo multiplier (up to x5), and any penalty resets it.
 
@@ -71,7 +77,7 @@ the salt per event. Untick **Show claim code** to run without codes (the tier an
 nothing is logged). A score at or above a tier shows the tier, the prize message and a
 code like `S-HFFX` (tier letter + 4 characters).
 
-**Staff: checking a code.** Every code is saved on the kiosk PC. Open the settings (Esc / Space / C) and look in the
+**Staff: checking a code.** Every code is saved on the kiosk PC. Open the settings (Esc / C) and look in the
 **Claims log** under "Games mode" (time, game, score, tier, code). "Copy log as CSV" copies it and "Clear log" empties it.
 A code that is not in the log is not valid. Rounds played with no hands detected (keyboard only) show the score but no code.
 
@@ -81,7 +87,7 @@ settings screen is open. The selection tiles show each game's best score of the 
 ## Settings menu
 
 The settings menu **opens automatically when the page starts**, so the operator can check the mode and words and then
-press Save & apply or Close to start. After that, **Esc**, **Space** or **C** (or the gear icon, top right, shown
+press Save & apply or Close to start. After that, **Esc**, **C** or **Space** (Space only outside games mode) (or the gear icon, top right, shown
 when the mouse moves) opens it again. Esc also closes it.
 
 - **Display mode** (see above).
@@ -124,4 +130,15 @@ If hands clip at the screen edges, widen `box.xMin/xMax`. If they look too small
 | `src/demo.js`     | Synthetic hands for attract mode                       |
 | `src/menu.js`     | Settings menu (C key), localStorage persistence         |
 | `src/main.js`     | Render loop, demo switching, status                    |
+| `src/pointer.js`  | Mouse/touch as a hand when no sensor sends hands (press = fist) |
+| `src/leapbadge.js`| Corner badge with Leap driver links while no sensor is connected |
+| `deploy/`         | Web deploy to leapgames.twentytwosoftware.com (see deploy/README.md) |
 | `tools/mock-leap.js` | Fake sensor for testing (`npm i ws && node tools/mock-leap.js`) |
+
+## Web version (leapgames.twentytwosoftware.com)
+
+The same files are served at https://leapgames.twentytwosoftware.com/ (opens games mode with SAVE UX). Without a sensor,
+the **mouse or touch** plays: move = palm/shield, press = fist. A corner badge links the drivers: Windows Orion 4.1.0,
+Mac (Intel) V2 2.3.1. Install, tick **Allow Web Apps** in the Leap Control Panel, then reload; the page connects to
+`ws://127.0.0.1:6437` (Chrome/Edge allow this from https because loopback counts as secure; Safari may block it).
+Deploy: `deploy/README.md`.
